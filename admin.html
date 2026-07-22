@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin SaneMap</title>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+
+body{
+
+font-family:Poppins,sans-serif;
+
+background:#f5f5f5;
+
+}
+
+
+header{
+
+background:#1a472a;
+
+color:white;
+
+padding:20px;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+}
+
+
+button{
+
+border:none;
+
+padding:10px 20px;
+
+border-radius:20px;
+
+cursor:pointer;
+
+background:#f4a261;
+
+font-weight:bold;
+
+}
+
+
+
+.container{
+
+padding:30px;
+
+}
+
+
+.card{
+
+background:white;
+
+padding:20px;
+
+margin-bottom:20px;
+
+border-radius:15px;
+
+box-shadow:0 5px 15px #0002;
+
+}
+
+
+.status{
+
+padding:5px 12px;
+
+border-radius:15px;
+
+font-weight:bold;
+
+}
+
+
+.pendente{
+
+background:#ffd6d6;
+
+}
+
+
+.analise{
+
+background:#fff3cd;
+
+}
+
+
+.concluida{
+
+background:#d4edda;
+
+}
+
+
+
+select{
+
+padding:8px;
+
+border-radius:10px;
+
+}
+
+.imagem-denuncia{
+
+    width:220px;
+
+    height:160px;
+
+    object-fit:cover;
+
+    border-radius:10px;
+
+    margin-top:15px;
+
+    cursor:pointer;
+
+}
+
+.dashboard{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+
+gap:20px;
+
+margin-bottom:30px;
+
+}
+
+
+.dashboard-card{
+
+background:white;
+
+padding:25px;
+
+border-radius:15px;
+
+box-shadow:0 5px 15px #0002;
+
+text-align:center;
+
+}
+
+
+.dashboard-card h3{
+
+font-size:16px;
+
+color:#555;
+
+}
+
+
+.dashboard-card p{
+
+font-size:35px;
+
+font-weight:bold;
+
+margin-top:10px;
+
+color:#1a472a;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<h2>
+🌱 SaneMap Admin
+</h2>
+
+
+<button onclick="logout()">
+Sair
+</button>
+
+
+</header>
+
+
+
+<div class="container">
+
+
+
+<div class="dashboard">
+
+
+<div class="dashboard-card">
+
+<h3>
+📋 Total denúncias
+</h3>
+
+<p id="totalDenuncias">
+0
+</p>
+
+</div>
+
+
+
+<div class="dashboard-card">
+
+<h3>
+🟡 Pendentes
+</h3>
+
+<p id="pendentes">
+0
+</p>
+
+</div>
+
+
+
+<div class="dashboard-card">
+
+<h3>
+🔵 Em análise
+</h3>
+
+<p id="analise">
+0
+</p>
+
+</div>
+
+
+
+<div class="dashboard-card">
+
+<h3>
+🟢 Concluídas
+</h3>
+
+<p id="concluidas">
+0
+</p>
+
+</div>
+
+
+
+<div class="dashboard-card">
+
+<h3>
+👥 Usuários
+</h3>
+
+<p id="usuarios">
+0
+</p>
+
+</div>
+</div>
+
+<h1>
+Denúncias
+</h1>
+
+
+<div id="listaDenuncias">
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+// =====================
+// PROTEGER ADMIN
+// =====================
+
+const usuario =
+JSON.parse(localStorage.getItem("usuario"));
+
+
+if(!usuario || usuario.tipo !== "admin"){
+
+    alert("Acesso negado!");
+
+    window.location.href="ecoviva3.html";
+
+}
+
+
+// =====================
+// CARREGAR DENÚNCIAS ADMIN
+// =====================
+
+async function carregarDenuncias(){
+
+
+try{
+
+
+const resposta = await fetch(
+
+"http://localhost:3000/admin/denuncias",
+
+{
+
+headers:{
+
+"Authorization":
+
+"Bearer " + localStorage.getItem("token")
+
+}
+
+}
+
+);
+
+
+
+const dados = await resposta.json();
+
+
+
+console.log("Denúncias admin:", dados);
+
+
+
+const lista =
+document.getElementById("listaDenuncias");
+
+
+
+lista.innerHTML =
+dados.map(d=>`
+
+
+
+<div class="card">
+
+
+<h3>
+${d.tipo}
+</h3>
+
+
+<p>
+<b>Bairro:</b>
+${d.bairro}
+</p>
+
+
+<p>
+<b>Endereço:</b>
+${d.endereco}
+</p>
+
+
+<p>
+<b>Descrição:</b>
+${d.descricao}
+</p>
+
+<p>
+<b>Email para contato:</b>
+${d.email_contato ? d.email_contato : "Não informado"}
+</p>
+
+${d.imagem ? `
+
+<img 
+src="http://localhost:3000/uploads/${d.imagem}"
+class="imagem-denuncia"
+alt="Imagem da denúncia">
+
+` : ""}
+
+<p>
+
+<b>Status:</b>
+
+
+<select onchange="alterarStatus(${d.id},this.value)">
+
+
+<option value="Pendente"
+${d.status=="Pendente"?"selected":""}>
+
+Pendente
+
+</option>
+
+
+
+<option value="Em análise"
+${d.status=="Em análise"?"selected":""}>
+
+Em análise
+
+</option>
+
+
+
+<option value="Concluída"
+${d.status=="Concluída"?"selected":""}>
+
+Concluída
+
+</option>
+
+
+</select>
+
+
+</p>
+
+
+<br>
+
+
+<button onclick="excluir(${d.id})">
+
+Excluir
+
+</button>
+
+
+
+</div>
+
+
+
+`).join("");
+
+
+
+}catch(error){
+
+
+console.log(error);
+
+alert("Erro ao carregar denúncias");
+
+
+}
+
+
+}
+
+
+
+
+
+// =====================
+// ALTERAR STATUS
+// =====================
+
+
+
+async function alterarStatus(id,status){
+
+
+const token = localStorage.getItem("token");
+
+
+const resposta = await fetch(
+
+
+`http://localhost:3000/denuncias/${id}/status`,
+
+
+{
+
+
+method:"PUT",
+
+
+headers:{
+
+
+"Content-Type":"application/json",
+
+"Authorization":"Bearer " + token
+
+
+},
+
+
+body:JSON.stringify({
+
+status: status
+
+})
+
+
+}
+
+
+);
+
+
+
+const dados = await resposta.json();
+
+
+console.log(dados);
+
+
+
+if(resposta.ok){
+
+
+alert("Status alterado com sucesso!");
+
+
+carregarDenuncias();
+
+
+}else{
+
+
+alert(dados.mensagem);
+
+
+}
+
+
+
+}
+
+
+
+// =====================
+// EXCLUIR
+// =====================
+
+
+async function excluir(id){
+
+
+
+if(!confirm("Deseja excluir esta denúncia?")){
+
+return;
+
+}
+
+
+
+const resposta = await fetch(
+
+
+`http://localhost:3000/denuncias/${id}`,
+
+
+{
+
+
+method:"DELETE",
+
+
+headers:{
+
+
+"Authorization":
+
+"Bearer " + localStorage.getItem("token")
+
+
+}
+
+
+}
+
+
+);
+
+
+
+const dados = await resposta.json();
+
+
+console.log(dados);
+
+
+
+carregarDenuncias();
+
+
+
+}
+
+
+
+
+
+// =====================
+// LOGOUT
+// =====================
+
+
+function logout(){
+
+
+localStorage.removeItem("token");
+
+localStorage.removeItem("usuario");
+
+
+window.location.href="login.html";
+
+
+}
+
+async function carregarDashboard(){
+
+
+try{
+
+
+const resposta = await fetch(
+
+"http://localhost:3000/estatisticas"
+
+);
+
+
+
+const dados = await resposta.json();
+
+
+console.log("Dashboard:", dados);
+
+
+
+document.getElementById("totalDenuncias").innerHTML =
+dados.denuncias;
+
+
+document.getElementById("pendentes").innerHTML =
+dados.pendentes;
+
+
+document.getElementById("analise").innerHTML =
+dados.analise;
+
+
+document.getElementById("concluidas").innerHTML =
+dados.concluidas;
+
+
+document.getElementById("usuarios").innerHTML =
+dados.usuarios;
+
+
+
+}catch(error){
+
+console.log(error);
+
+}
+
+
+}
+
+
+// INICIAR
+
+carregarDashboard();
+
+carregarDenuncias();
+
+
+</script>
+
+</body>
+
+</html>

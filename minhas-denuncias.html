@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Minhas Denúncias - SaneMap</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Poppins,sans-serif;
+background:#f8f9fa;
+}
+
+
+.navbar{
+background:linear-gradient(135deg,#1a472a,#2d6a4f);
+padding:1rem 0;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+
+.nav-container{
+max-width:1200px;
+margin:auto;
+padding:0 2rem;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+
+.logo{
+display:flex;
+align-items:center;
+gap:.5rem;
+color:white;
+font-size:1.5rem;
+font-weight:700;
+}
+
+
+.logo i{
+font-size:2rem;
+color:#52b788;
+}
+
+
+.logo-text{
+display:flex;
+flex-direction:column;
+line-height:1.2;
+}
+
+
+.logo-slogan{
+font-size:.7rem;
+font-weight:300;
+opacity:.9;
+}
+
+
+.voltar{
+color:white;
+text-decoration:none;
+font-weight:600;
+}
+
+
+.container{
+max-width:1000px;
+margin:40px auto;
+padding:20px;
+}
+
+
+h2{
+color:#1a472a;
+margin-bottom:30px;
+}
+
+
+#listaDenuncias{
+display:grid;
+gap:20px;
+}
+
+
+.card{
+background:white;
+padding:25px;
+border-radius:15px;
+box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+
+.card h3{
+color:#1a472a;
+margin-bottom:10px;
+}
+
+
+.status{
+display:inline-block;
+padding:5px 15px;
+border-radius:20px;
+font-weight:bold;
+margin-top:15px;
+}
+
+
+.Pendente{
+background:#f8d7da;
+color:#721c24;
+}
+
+
+.Em-análise{
+background:#fff3cd;
+color:#856404;
+}
+
+
+.Concluída{
+background:#d4edda;
+color:#155724;
+}
+
+
+.imagem-denuncia{
+width:220px;
+height:160px;
+object-fit:cover;
+border-radius:10px;
+margin-top:15px;
+cursor:pointer;
+}
+
+
+@media(max-width:700px){
+
+.nav-container{
+padding:0 1rem;
+}
+
+.logo{
+font-size:1.2rem;
+}
+
+.logo i{
+font-size:1.5rem;
+}
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<nav class="navbar">
+
+<div class="nav-container">
+
+
+<div class="logo">
+
+<i class="fas fa-leaf"></i>
+
+<div class="logo-text">
+
+<span>SaneMap</span>
+
+<span class="logo-slogan">
+Sua voz pela cidade
+</span>
+
+</div>
+
+</div>
+
+
+<a class="voltar" href="ecoviva3.html">
+← Voltar ao início
+</a>
+
+
+</div>
+
+</nav>
+
+
+
+<div class="container">
+
+
+<h2>
+Minhas Denúncias
+</h2>
+
+
+<div id="listaDenuncias">
+
+Carregando...
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+async function carregarMinhasDenuncias(){
+
+const token = localStorage.getItem("token");
+
+
+if(!token){
+
+alert("Faça login primeiro!");
+
+window.location.href="login.html";
+
+return;
+
+}
+
+
+const resposta = await fetch(
+"http://localhost:3000/minhas-denuncias",
+{
+headers:{
+"Authorization":"Bearer "+token
+}
+});
+
+
+if(!resposta.ok){
+
+alert("Sessão expirada.");
+
+localStorage.clear();
+
+window.location.href="login.html";
+
+return;
+
+}
+
+
+const denuncias = await resposta.json();
+
+
+const lista =
+document.getElementById("listaDenuncias");
+
+
+if(denuncias.length===0){
+
+lista.innerHTML=`
+
+<div class="card">
+
+<h3>Nenhuma denúncia encontrada</h3>
+
+<p>
+Você ainda não realizou nenhuma denúncia.
+</p>
+
+</div>
+
+`;
+
+return;
+
+}
+
+
+
+lista.innerHTML = denuncias.map(d=>`
+
+<div class="card">
+
+<h3>${d.tipo}</h3>
+
+
+<p>
+<b>Bairro:</b> ${d.bairro}
+</p>
+
+
+<p>
+<b>Local:</b> ${d.endereco} - ${d.bairro}
+</p>
+
+
+<p>
+${d.descricao}
+</p>
+
+
+${d.imagem ? `
+
+<img 
+src="http://localhost:3000/uploads/${d.imagem}"
+class="imagem-denuncia">
+
+`: ""}
+
+
+<p>
+<b>Data:</b>
+${new Date(d.data_criacao).toLocaleDateString("pt-BR")}
+</p>
+
+
+<span class="status ${d.status.replace(" ","-")}">
+
+${d.status}
+
+</span>
+
+
+</div>
+
+
+`).join("");
+
+
+}
+
+
+carregarMinhasDenuncias();
+
+</script>
+
+
+</body>
+
+</html>

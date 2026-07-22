@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaneMap - Sua voz pela cidade</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --verde-escuro: #1a472a;
+            --verde-medio: #2d6a4f;
+            --verde-claro: #52b788;
+            --amarelo-ambar: #f4a261;
+            --branco: #ffffff;
+            --cinza-claro: #f8f9fa;
+            --cinza-medio: #6c757d;
+            --vermelho: #e63946;
+            --amarelo: #ffd60a;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Header / Navbar */
+        .navbar {
+            background: linear-gradient(135deg, var(--verde-escuro), var(--verde-medio));
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--branco);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--verde-claro);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo-slogan {
+            font-size: 0.7rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--branco);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: var(--verde-claro);
+        }
+
+        .btn-denuncia {
+            background: var(--amarelo-ambar);
+            color: var(--verde-escuro);
+            padding: 0.6rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-denuncia:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 162, 97, 0.4);
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: var(--branco);
+            border-radius: 3px;
+            transition: 0.3s;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--verde-medio), var(--verde-claro));
+            color: var(--branco);
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100px); }
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--amarelo-ambar);
+            color: var(--verde-escuro);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(244, 162, 97, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--branco);
+            border: 2px solid var(--branco);
+        }
+
+        .btn-secondary:hover {
+            background: var(--branco);
+            color: var(--verde-medio);
+        }
+
+        /* Stats Section */
+        .stats {
+            background: var(--cinza-claro);
+            padding: 3rem 2rem;
+        }
+
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-card {
+            background: var(--branco);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 3rem;
+            color: var(--verde-medio);
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--verde-escuro);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--cinza-medio);
+            font-size: 1rem;
+        }
+
+        /* Section Styling */
+        .section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            color: var(--verde-escuro);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--cinza-medio);
+            font-size: 1.1rem;
+        }
+
+        /* Map Section */
+        #mapa {
+            background: var(--cinza-claro);
+        }
+
+        .map-search {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .map-search input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1.5rem;
+            border: 2px solid var(--verde-claro);
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .map-search input:focus {
+            border-color: var(--verde-medio);
+        }
+
+        .map-search button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--verde-medio);
+            color: var(--branco);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .map-search button:hover {
+            background: var(--verde-escuro);
+        }
+
+        #map {
+            height:500px;
+            width:100%;
+            border-radius:15px;
+            box-shadow:0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Forum Section */
+        .forum-filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.5rem;
+            border: 2px solid var(--verde-claro);
+            background: transparent;
+            color: var(--verde-medio);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--verde-medio);
+            color: var(--branco);
+            border-color: var(--verde-medio);
+        }
+
+        .btn-novo-topico {
+            background: var(--amarelo-ambar);
+            color: var(--verde-escuro);
+            border: none;
+            margin-bottom: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .forum-posts {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .post-card {
+            background: var(--branco);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 4px solid var(--verde-claro);
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--branco);
+            font-size: 1.2rem;
+        }
+
+        .post-info h3 {
+            font-size: 1rem;
+            color: var(--verde-escuro);
+            margin-bottom: 0.2rem;
+        }
+
+        .post-meta {
+            font-size: 0.85rem;
+            color: var(--cinza-medio);
+        }
+
+        .post-category {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .cat-lixo { background: #ffe5e5; color: #d32f2f; }
+        .cat-poluicao { background: #e3f2fd; color: #1976d2; }
+        .cat-agua { background: #e0f7fa; color: #0097a7; }
+        .cat-desmatamento { background: #fff3e0; color: #f57c00; }
+        .cat-boas-praticas { background: #e8f5e9; color: #388e3c; }
+
+        .post-title {
+            font-size: 1.3rem;
+            color: var(--verde-escuro);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .post-preview {
+            color: var(--cinza-medio);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .post-footer {
+            display: flex;
+            gap: 2rem;
+            color: var(--cinza-medio);
+            font-size: 0.9rem;
+        }
+
+        .post-footer i {
+            margin-right: 0.3rem;
+            color: var(--verde-medio);
+        }
+
+        /* Denúncias Section */
+        .denuncias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .denuncia-card {
+            background: var(--branco);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .denuncia-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .denuncia-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .denuncia-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--branco);
+        }
+
+        .icon-lixo { background: var(--vermelho); }
+        .icon-poluicao { background: #795548; }
+        .icon-agua { background: #2196f3; }
+        .icon-desmatamento { background: var(--amarelo-ambar); }
+
+        .denuncia-info h4 {
+            font-size: 1rem;
+            color: var(--verde-escuro);
+            margin-bottom: 0.2rem;
+        }
+
+        .denuncia-cidade {
+            font-size: 0.85rem;
+            color: var(--cinza-medio);
+        }
+
+        .denuncia-desc {
+            color: #555;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .denuncia-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-analise { background: #fff3cd; color: #856404; }
+        .status-resolvido { background: #d4edda; color: #155724; }
+        .status-pendente { background: #f8d7da; color: #721c24; }
+
+        .denuncia-data {
+            font-size: 0.8rem;
+            color: var(--cinza-medio);
+        }
+
+        /* Como Funciona Section */
+        #sobre {
+            background: var(--cinza-claro);
+        }
+
+        .como-funciona {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step-card {
+            background: var(--branco);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .step-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--verde-medio), var(--verde-claro));
+            color: var(--branco);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
+
+        .step-card h3 {
+            color: var(--verde-escuro);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-card p {
+            color: var(--cinza-medio);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--verde-escuro);
+            color: var(--branco);
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--verde-claro);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: var(--branco);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .footer-section a:hover {
+            opacity: 1;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            opacity: 0.8;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--branco);
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--cinza-medio);
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--vermelho);
+        }
+
+        .modal h2 {
+            color: var(--verde-escuro);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--verde-escuro);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--verde-claro);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--verde-medio);
+            color: var(--branco);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease-out;
+            transform: translateX(400px);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .toast i {
+            font-size: 1.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--verde-escuro);
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1rem;
+                transform: translateY(-100%);
+                opacity: 0;
+                pointer-events: none;
+                transition: all 0.3s;
+            }
+
+            .nav-menu.active {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            #map {
+                height: 300px;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .toast {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
+            }
+
+        }
+
+        .denuncia-imagem{
+            width:100%;
+            max-height:250px;
+            object-fit:cover;
+            border-radius:10px;
+            margin-top:15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <div class="logo-text">
+                    <span>SaneMap</span>
+                    <span class="logo-slogan">Sua voz pela cidade</span>
+                </div>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#inicio">Início</a></li>
+                <li><a href="#mapa">Mapa</a></li>
+                <li><a href="#denuncias">Denúncias</a></li>
+                <li><a href="#sobre">Sobre</a></li>
+                <li id="loginArea"><a href="login.html">Entrar</a></li>
+                <li id="usuarioArea" style="display:none;"><span id="nomeUsuario" style="color:white;font-weight:bold;"></span></li>
+                <li id="minhasDenunciasArea" style="display:none;">
+                <a href="minhas-denuncias.html">
+                Minhas Denúncias
+                </a>
+                </li>
+                <li id="adminArea" style="display:none;"><a href="admin.html">Admin</a></li>
+                <li id="sairArea" style="display:none;"><a href="#" onclick="logout()">Sair</a></li>
+                <li><a href="#" class="btn-denuncia" onclick="abrirDenuncia()">Fazer Denúncia</a></li>
+            </ul>
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="hero-content">
+            <h1>Juntos por uma cidade melhor</h1>
+            <p>Ajude a cuidar do meio ambiente da sua cidade. Registre ocorrências ambientais e contribua para a construção de um município mais sustentável. Sua participação faz a diferença!</p>
+            <div class="hero-buttons">
+                <a href="#mapa" class="btn btn-primary">
+                    <i class="fas fa-map-marker-alt"></i> Ver o Mapa
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stats-container">
+
+            <div class="stat-card">
+                <i class="fas fa-exclamation-circle"></i>
+                <div class="stat-number" id="totalDenuncias">0</div>
+                <div class="stat-label">Denúncias Registradas</div>
+            </div>
+
+            <div class="stat-card">
+                <i class="fas fa-city"></i>
+                <div class="stat-number" id="totalBairros">0</div>
+                <div class="stat-label">Bairros Monitorados</div>
+            </div>
+
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <div class="stat-number" id="totalUsuarios">0</div>
+                <div class="stat-label">Usuários Ativos</div>
+            </div>
+
+        </div>
+    </section>
+    <!-- Mapa Section -->
+    
+    <section class="section" id="mapa">
+        <div class="section-header">
+            <h2><i class="fas fa-map-marked-alt"></i> Mapa Ambiental de Quedas do Iguaçu - PR</h2>
+            <p>Localize seu bairro e veja a situação ambiental da região</p>
+        </div>
+
+        <div id="map"></div>
+    </section>
+
+    <!-- Denúncias Section -->
+    <section class="section" id="denuncias">
+        <div class="section-header">
+            <h2><i class="fas fa-bullhorn"></i> Denúncias Recentes</h2>
+            <p>Acompanhe as últimas denúncias registradas na plataforma</p>
+        </div>
+
+        <div class="denuncias-grid" id="denunciasGrid">
+            <!-- Denúncias serão adicionadas dinamicamente -->
+        </div>
+        <div style="text-align:center;margin-top:30px;">
+            <button
+                id="btnVerMais"
+                class="btn btn-primary"
+                onclick="toggleDenuncias()"
+                style="display:none;">
+                Ver mais denúncias ▼
+            </button>
+        </div>
+    </section>
+
+    <!-- Sobre / Como Funciona Section -->
+    <section class="section" id="sobre">
+        <div class="section-header">
+            <h2><i class="fas fa-info-circle"></i> Como Funciona</h2>
+            <p>Três passos simples para fazer a diferença</p>
+        </div>
+
+        <div class="como-funciona">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Localize seu bairro</h3>
+                <p>Explore o mapa interativo, localize seu bairro e veja as ocorrências ambientais registradas na sua região.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Registre a denúncia</h3>
+                <p>Descreva o problema ambiental, adicione fotos e registre sua ocorrência de forma rápida e segura.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Acompanhe o status</h3>
+                <p>Acompanhe o status da sua denúncia e veja as atualizações sobre o andamento da ocorrência até sua resolução.</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: var(--branco); border-radius: 15px;">
+            <h3 style="color: var(--verde-escuro); margin-bottom: 1rem;">Nossa Missão</h3>
+            <p style="color: var(--cinza-medio); max-width: 800px; margin: 0 auto; line-height: 1.8;">
+                O SaneMap nasceu da necessidade de dar voz às comunidades que sofrem com problemas ambientais. 
+                Acreditamos que a transparência e a participação cidadã são essenciais para construir Bairros mais 
+                limpos e sustentáveis. Juntos, podemos fazer a diferença e criar um futuro melhor para todos.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Sobre o SaneMap</h3>
+                <p>Plataforma colaborativa para registrar e acompanhar problemas de saneamento urbano em Quedas do Iguaçu - PR.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Links Úteis</h3>
+                <ul>
+                    <li><a href="#inicio">Início</a></li>
+                    <li><a href="#mapa">Mapa</a></li>
+                    <li><a href="#denuncias">Denúncias</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Redes Sociais</h3>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/sanemap_qdi?igsh=a2FwY2dhOG5md3B3"><i class="fab fa-instagram"></i></a>
+                    <a href="mailto:SaneMap79@gmail.com" title="sanemap79@gmail.com">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 SaneMap. Todos os direitos reservados.</p>
+            <p style="margin-top: 0.5rem; font-style: italic; opacity: 0.8;">
+                "O futuro de Quedas do Iguaçu está em nossas mãos. Juntos somos mais fortes!" 🌍
+            </p>
+        </div>
+    </footer>
+
+    <!-- Modal Denúncia -->
+    <div class="modal" id="modalDenuncia">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modalDenuncia')">&times;</button>
+            <h2>Fazer Denúncia</h2>
+            <form onsubmit="submitDenuncia(event)">
+                <div class="form-group">
+                    <label>Tipo de Denúncia *</label>
+                    <select id="denunciaTipo" required>
+                        <option value="">Selecione...</option>
+
+                        <option value="Lixo / Descarte Irregular">
+                            🗑️ Lixo / Descarte Irregular
+                        </option>
+
+                        <option value="Esgoto a Céu Aberto">
+                            🚰 Esgoto a Céu Aberto
+                        </option>
+
+                        <option value="Problemas de Saneamento">
+                            🏠 Problemas de Saneamento
+                        </option>
+
+                        <option value="Poda ou Corte Irregular de Árvores">
+                            🌳 Poda ou Corte Irregular de Árvores
+                        </option>
+                </select>
+                </div>
+                <div class="form-group">
+                    <label>Bairro *</label>
+                    <select name="bairro" id="denunciaBairro" required>
+                        <option value="Alto recreio">Alto recreio</option>
+                        <option value="Araucária">Araucária</option>
+                        <option value="Beira Rio">Beira Rio</option>
+                        <option value="Bela Vista">Bela Vista</option>
+                        <option value="Bom Pastor">Bom Pastor</option>
+                        <option value="Centro">Centro</option>
+                        <option value="Entre Vilas">Entre Vilas</option>
+                        <option value="Jagoda">Jagoda</option>
+                        <option value="João Paulo II">João Paulo II</option>
+                        <option value="Luzitani">Luzitani</option>
+                        <option value="Parque Industrial">Parque Industrial</option>
+                        <option value="Primavera">Primavera</option>
+                        <option value="Progresso">Progresso</option>
+                        <option value="Regional">Regional</option>
+                        <option value="Santa Fé">Santa Fé</option>
+                        <option value="São Cristóvão">São Cristóvão</option>
+                        <option value="Tarumã">Tarumã</option>
+                        <option value="Vila John Kennedy">Vila John Kennedy</option>
+                        <option value="Vila Pardais">Vila Pardais</option>
+                        <option value="Vila Pindorama">Vila Pindorama</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Endereço / Localização *</label>
+                    <input type="text" id="denunciaEndereco" required placeholder="Ex: Rua Palmito, 334">
+                </div>
+                <div class="form-group">
+                    <label>Descrição *</label>
+                    <textarea id="denunciaDescricao" required placeholder="Descreva detalhadamente o problema..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        Email para contato (opcional)
+                    </label>
+
+                    <input 
+                        type="email"
+                        id="denunciaEmail"
+                        placeholder="exemplo@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Foto (opcional)</label>
+                    <input 
+                        type="file" 
+                        id="denunciaImagem"
+                        accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-bullhorn"></i> Enviar Denúncia
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+    <script>
+    (function(){
+        emailjs.init("xaXnYOONwsdX1havW");
+    })();
+    </script>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // Menu Toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    navMenu.classList.remove('active');
+                }
+            });
+        });
+
+
+        // ======================
+        // DENÚNCIAS
+        // ======================
+
+        async function carregarDenuncias() {
+            const resposta = await fetch(
+                "http://localhost:3000/denuncias"
+            );
+            const denuncias = await resposta.json();
+
+            console.log("Denúncias recebidas:", denuncias);
+
+            renderDenuncias(denuncias);
+        }
+
+        let todasDenuncias = [];
+        let expandido = false;
+
+        function renderDenuncias(denunciasData){
+
+            todasDenuncias = denunciasData;
+
+            const container = document.getElementById("denunciasGrid");
+
+            const lista = expandido
+                ? denunciasData
+                : denunciasData.slice(0,3);
+
+            container.innerHTML = lista.map(d => `
+
+                <div class="denuncia-card">
+
+                    <h4>${d.tipo}</h4>
+
+                    <p><b>Bairro:</b> ${d.bairro}</p>
+
+                    <p>${d.endereco}</p>
+
+                    <p>${d.descricao}</p>
+
+                    ${d.imagem ? `
+                        <img
+                        src="http://localhost:3000/uploads/${d.imagem}"
+                        class="denuncia-imagem"
+                        alt="Imagem da denúncia">
+                    ` : ""}
+
+                </div>
+
+            `).join("");
+
+            const botao = document.getElementById("btnVerMais");
+
+            if(denunciasData.length > 3){
+
+                botao.style.display = "inline-block";
+
+                botao.innerHTML = expandido
+                    ? "Ver menos ▲"
+                    : "Ver mais denúncias ▼";
+
+            }else{
+                botao.style.display = "none";
+            }
+        }
+
+        function toggleDenuncias(){
+            expandido = !expandido;
+            renderDenuncias(todasDenuncias);
+        }
+
+        async function excluirDenuncia(id) {
+
+    console.log("CLICOU");
+
+    try {
+
+        const resposta = await fetch(
+            `http://127.0.0.1:3000/denuncias/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        console.log(resposta);
+
+        carregarDenuncias();
+
+    } catch (erro) {
+
+        console.log(erro);
+    }
+}
+
+        // ======================
+        // MODAL
+        // ======================
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // fechar clicando fora
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal(modal.id);
+            });
+        });
+
+        // ======================
+        // FORMULÁRIOS
+        // ======================
+
+        function submitNovoTopico(e) {
+            e.preventDefault();
+            showToast('Tópico publicado!');
+            closeModal('modalNovoTopico');
+            e.target.reset();
+        }
+
+        async function submitDenuncia(e) {
+
+            e.preventDefault();
+
+            const tipo =
+                document.getElementById("denunciaTipo").value;
+
+            const bairro =
+                document.getElementById("denunciaBairro").value;
+
+            const endereco =
+                document.getElementById("denunciaEndereco").value;
+
+            const descricao =
+                document.getElementById("denunciaDescricao").value;
+
+            const email =
+                document.getElementById("denunciaEmail").value;
+
+            const imagem =
+                document.getElementById("denunciaImagem").files[0];
+
+            const token = localStorage.getItem("token");
+
+
+        if(!token){
+
+            alert("Você precisa estar logado para enviar uma denúncia!");
+
+            window.location.href = "login.html";
+
+            return;
+
+        }
+
+
+
+        const formData = new FormData();
+
+
+            formData.append("tipo", tipo);
+
+            formData.append("bairro", bairro);
+
+            formData.append("endereco", endereco);
+
+            formData.append("descricao", descricao);
+
+            formData.append("email", email);
+
+
+            if(imagem){
+
+                formData.append("imagem", imagem);
+
+            }
+
+
+
+            const resposta = await fetch(
+                "http://localhost:3000/denuncias",
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Authorization": "Bearer " + token
+
+                    },
+
+                    body: formData
+
+                }
+            );
+
+            const dados = await resposta.json();
+
+            console.log(dados);
+
+            alert(dados.mensagem);
+
+            carregarDenuncias();
+
+            e.target.reset();
+        }
+
+        // ======================
+        // TOAST
+        // ======================
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>${message}</span>`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ======================
+        // GEOLOCALIZAÇÃO (CORRIGIDA)
+        // ======================
+
+        if (navigator.geolocation) {
+            console.log("Geolocalização disponível");
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    console.log("Lat:", pos.coords.latitude);
+                    console.log("Lng:", pos.coords.longitude);
+                },
+                () => {
+                    console.log("Não foi possível obter localização");
+                }
+            );
+        }
+
+        // ======================
+// USUARIO LOGIN
+// ======================
+
+function verificarUsuario(){
+
+    const usuario = JSON.parse(
+        localStorage.getItem("usuario")
+    );
+
+
+    if(usuario){
+
+
+        document.getElementById("loginArea")
+        .style.display="none";
+
+
+        document.getElementById("usuarioArea")
+        .style.display="block";
+
+
+        document.getElementById("sairArea")
+        .style.display="block";
+
+
+        document.getElementById("nomeUsuario")
+        .innerHTML =
+        "Olá, " + usuario.nome;
+
+
+        // MOSTRAR MINHAS DENÚNCIAS
+        document.getElementById("minhasDenunciasArea")
+        .style.display="block";
+
+
+
+        if(usuario.tipo === "admin"){
+
+            document.getElementById("adminArea")
+            .style.display="block";
+
+        }
+
+    }
+
+}
+
+
+
+function logout(){
+
+    localStorage.removeItem("token");
+
+    localStorage.removeItem("usuario");
+
+
+    window.location.reload();
+
+}
+        // ======================
+        // INIT
+        // ======================
+
+        function abrirDenuncia(){
+
+            const token = localStorage.getItem("token");
+
+
+            if(token == null){
+
+                alert("Faça login primeiro!");
+
+                window.location.href = "login.html";
+
+                return;
+
+            }
+            openModal("modalDenuncia");
+        }
+
+
+        async function carregarEstatisticas(){
+            try{
+
+                const resposta = await fetch(
+                    "http://localhost:3000/estatisticas"
+                );
+
+                const dados = await resposta.json();
+
+                document.getElementById("totalDenuncias").textContent =
+                    dados.denuncias;
+
+                document.getElementById("totalBairros").textContent =
+                    dados.bairros;
+
+                document.getElementById("totalUsuarios").textContent =
+                    dados.usuarios;
+
+            }catch(erro){
+
+                console.log(erro);
+
+            }
+
+        }
+
+        // ======================
+        // MAPA
+        // ======================
+
+
+        const mapa = L.map('map').setView(
+            [-25.4506, -52.9108],
+            14
+        );
+
+
+        L.tileLayer(
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                attribution:'© OpenStreetMap'
+            }
+        ).addTo(mapa);
+
+        // LISTA DOS BAIRROS
+        const bairros = {
+
+            "Alto recreio": {
+                lat: -25.451668602812145,
+                lng: -52.898718746690776
+            },
+
+            "Araucária": {
+                lat: -25.451707563941454,
+                lng: -52.912843176088096
+            },
+
+            "Beira Rio": {
+                lat: -25.443577213036434,
+                lng: -52.8908789202653
+            },
+
+            "Bela Vista": {
+                lat: -25.45844396574768,
+                lng: -52.91796386215474
+            },
+
+            "Bom Pastor": {
+                lat: -25.444253502825624,
+                lng: -52.91476281043827
+            },
+
+            "Centro": {
+                lat: -25.452920123891893,
+                lng: -52.90895495825882
+            },
+
+            "Entre Vilas": {
+                lat: -25.44850810549959,
+                lng: -52.88968484819803
+            },
+
+            "Jagoda": {
+                lat: -25.437110193303216,
+                lng: -52.90133029127756
+            },
+
+            "João Paulo II": {
+                lat: -25.443720587413534,
+                lng: -52.9204379521279
+            },
+
+            "Luzitani": {
+                lat: -25.448830699922,
+                lng: -52.89658600543963
+            },
+
+            "Parque Industrial": {
+                lat: -25.445720090982533,
+                lng: -52.90274914281342
+            },
+
+            "Primavera": {
+                lat: -25.45375400392846,
+                lng: -52.89375615053381
+            },
+
+            "Progresso": {
+                lat: -25.44615045554572,
+                lng: -52.90878609753187
+            },
+
+            "Regional": {
+                lat: -25.443257614847308,
+                lng: -52.89677742947086
+            },
+
+            "Santa Fé": {
+                lat: -25.440000839511857,
+                lng: -52.89004813095657
+            },
+
+            "São Cristóvão": {
+                lat: -25.459533357981293,
+                lng: -52.90759215977837
+            },
+
+            "Tarumã": {
+                lat: -25.457268548113237,
+                lng: -52.90456742014999
+            },
+
+            "Vila John Kennedy": {
+                lat: -25.455635122586543,
+                lng: -52.9211631030428
+            },
+
+            "Vila Pindorama": {
+                lat: -25.438036487514317,
+                lng: -52.86856416566082
+            }
+
+        };
+
+        // CARREGAR DENÚNCIAS NO MAPA
+        async function carregarMapaDenuncias(){
+
+            const resposta = await fetch(
+                "http://localhost:3000/mapa-denuncias"
+            );
+
+
+            const dados = await resposta.json();
+
+
+            console.log("Dados mapa:", dados);
+
+
+
+            Object.keys(bairros).forEach(nomeBairro => {
+
+
+                let quantidade = 0;
+
+
+                const bairroEncontrado = dados.find(
+                    item => item.bairro === nomeBairro
+                );
+
+
+                if(bairroEncontrado){
+
+                    quantidade = bairroEncontrado.quantidade;
+
+                }
+
+
+
+                L.marker([
+                    bairros[nomeBairro].lat,
+                    bairros[nomeBairro].lng
+                ])
+                .addTo(mapa)
+                .bindPopup(`
+
+                    <h3>${nomeBairro}</h3>
+
+                    <p>
+                    Denúncias registradas:
+                    <b>${quantidade}</b>
+                    </p>
+
+                `);
+
+
+            });
+
+
+        }
+
+
+        carregarMapaDenuncias();
+
+        // init
+        verificarUsuario();
+
+        carregarDenuncias();
+
+        carregarEstatisticas();
+    </script>
+
+</body>
+</html>
