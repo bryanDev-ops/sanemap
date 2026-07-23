@@ -7,6 +7,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 
@@ -89,8 +90,6 @@ app.use((req,res,next)=>{
     next();
 
 });
-app.use(express.static(__dirname));
-app.use("/uploads", express.static("uploads"));
 
 
 // ABRIR SITE
@@ -101,7 +100,8 @@ app.get("/", (req,res)=>{
     );
 
 });
-
+app.use(express.static(__dirname));
+app.use("/uploads", express.static("uploads"));
 
 // MYSQL
 const db = mysql.createConnection({
@@ -210,10 +210,23 @@ app.post("/cadastro", async (req,res)=>{
 
 });
 
+const loginLimiter = rateLimit({
+
+    windowMs: 15 * 60 * 1000,
+
+    max: 5,
+
+    message: {
+        mensagem: "Muitas tentativas de login. Aguarde alguns minutos."
+    },
+
+    standardHeaders: true,
+    legacyHeaders: false
+
+});
+
 // LOGIN
-
-app.post("/login",(req,res)=>{
-
+app.post("/login", loginLimiter, (req,res)=>{
 
     const {
         email,
