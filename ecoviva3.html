@@ -1146,10 +1146,11 @@
         // DENÚNCIAS
         // ======================
 
-        async function carregarDenuncias() {
+         async function carregarDenuncias() {
             const resposta = await fetch(
-                "http://localhost:3000/denuncias"
+                "https://sanemap-backend.onrender.com/denuncias"
             );
+
             const denuncias = await resposta.json();
 
             console.log("Denúncias recebidas:", denuncias);
@@ -1184,7 +1185,7 @@
 
                     ${d.imagem ? `
                         <img
-                        src="http://localhost:3000/uploads/${d.imagem}"
+                        src="https://sanemap-backend.onrender.com/uploads/${d.imagem}"
                         class="denuncia-imagem"
                         alt="Imagem da denúncia">
                     ` : ""}
@@ -1220,7 +1221,7 @@
     try {
 
         const resposta = await fetch(
-            `http://127.0.0.1:3000/denuncias/${id}`,
+            `https://sanemap-backend.onrender.com/denuncias/${id}`,
             {
                 method: "DELETE"
             }
@@ -1328,7 +1329,7 @@
 
 
             const resposta = await fetch(
-                "http://localhost:3000/denuncias",
+                "https://sanemap-backend.onrender.com/denuncias",
                 {
 
                     method: "POST",
@@ -1477,7 +1478,7 @@ function logout(){
             try{
 
                 const resposta = await fetch(
-                    "http://localhost:3000/estatisticas"
+                    "https://sanemap-backend.onrender.com/estatisticas"
                 );
 
                 const dados = await resposta.json();
@@ -1621,7 +1622,7 @@ function logout(){
         async function carregarMapaDenuncias(){
 
             const resposta = await fetch(
-                "http://localhost:3000/mapa-denuncias"
+                "https://sanemap-backend.onrender.com/mapa-denuncias"
             );
 
 

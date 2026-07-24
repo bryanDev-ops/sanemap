@@ -338,7 +338,7 @@ try{
 
 const resposta = await fetch(
 
-"http://localhost:3000/admin/denuncias",
+"https://sanemap-backend.onrender.com/denuncias",
 
 {
 
@@ -407,7 +407,7 @@ ${d.email_contato ? d.email_contato : "Não informado"}
 ${d.imagem ? `
 
 <img 
-src="http://localhost:3000/uploads/${d.imagem}"
+src="https://sanemap-backend.onrender.com/uploads/${d.imagem}"
 class="imagem-denuncia"
 alt="Imagem da denúncia">
 
@@ -504,7 +504,7 @@ const token = localStorage.getItem("token");
 const resposta = await fetch(
 
 
-`http://localhost:3000/denuncias/${id}/status`,
+`https://sanemap-backend.onrender.com/denuncias/${id}/status`,
 
 
 {
@@ -588,7 +588,7 @@ return;
 const resposta = await fetch(
 
 
-`http://localhost:3000/denuncias/${id}`,
+`https://sanemap-backend.onrender.com/denuncias/${id}`,
 
 
 {
@@ -658,7 +658,7 @@ try{
 
 const resposta = await fetch(
 
-"http://localhost:3000/estatisticas"
+"https://sanemap-backend.onrender.com/estatisticas"
 
 );
 
