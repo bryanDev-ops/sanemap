@@ -15,6 +15,7 @@ if (!fs.existsSync("uploads")) {
 }
 
 const app = express();
+app.set("trust proxy", 1);
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
