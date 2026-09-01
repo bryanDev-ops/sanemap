@@ -110,7 +110,7 @@ app.use(express.static(__dirname));
 app.use("/uploads", express.static("uploads"));
 
 // MYSQL
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -118,22 +118,10 @@ const db = mysql.createConnection({
     port: process.env.DB_PORT,
     ssl: {
         rejectUnauthorized: false
-    }
-});
-
-
-db.connect((err)=>{
-
-    if(err){
-
-        console.log("ERRO MYSQL:");
-        console.log(err);
-        return;
-
-    }
-
-    console.log("MySQL conectado");
-
+    },
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 
